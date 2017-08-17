@@ -46,19 +46,17 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     public void onMessageReceived(RemoteMessage remoteMessage) {
 
         //Toast.makeText(getApplicationContext(), "Message Received !" , Toast.LENGTH_SHORT).show();
-
-       if(remoteMessage.getNotification() != null) {
-           String title = (remoteMessage.getNotification().getTitle() != null) ? remoteMessage.getNotification().getTitle() : "";
-           String body = (remoteMessage.getNotification().getBody() != null) ? remoteMessage.getNotification().getBody() : "";
-
-           //showNotification(title, remoteMessage);
-           Log.e("Notification : ", body);
-       }
-
+//
+//       if(remoteMessage.getNotification() != null) {
+//           String title = (remoteMessage.getNotification().getTitle() != null) ? remoteMessage.getNotification().getTitle() : "";
+//           String body = (remoteMessage.getNotification().getBody() != null) ? remoteMessage.getNotification().getBody() : "";
+//
+//           //showNotification(title, remoteMessage);
+//           Log.e("Notification : ", body);
+//       }
 
        if(remoteMessage.getData() !=null){
-           sendNotification(remoteMessage.getData().get("title"), remoteMessage.getData().get("message"));
-           Log.e("Data : ",  remoteMessage.getData().get("message"));
+           sendNotification(remoteMessage.getData().get("title"), remoteMessage.getData().get("body"));
        }
 
     }
@@ -79,6 +77,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent)
+                .setColor(ContextCompat.getColor(this, R.color.colorAccent))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
