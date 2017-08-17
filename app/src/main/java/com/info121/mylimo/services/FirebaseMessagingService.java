@@ -46,7 +46,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     public void onMessageReceived(RemoteMessage remoteMessage) {
 
         //Toast.makeText(getApplicationContext(), "Message Received !" , Toast.LENGTH_SHORT).show();
-//
+
 //       if(remoteMessage.getNotification() != null) {
 //           String title = (remoteMessage.getNotification().getTitle() != null) ? remoteMessage.getNotification().getTitle() : "";
 //           String body = (remoteMessage.getNotification().getBody() != null) ? remoteMessage.getNotification().getBody() : "";
