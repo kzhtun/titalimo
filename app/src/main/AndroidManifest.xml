@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.info121.mylimo">
+    package="com.info121.titalimo">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -31,7 +31,7 @@
         </activity>
         <activity android:name=".activities.WebViewActivity"></activity>
 
-        <service android:name="com.info121.mylimo.services.SmartLocationService"></service>
+        <service android:name="com.info121.titalimo.services.SmartLocationService"></service>
 
         <service android:name=".services.FirebaseMessagingService">
             <intent-filter>
@@ -44,9 +44,7 @@
             </intent-filter>
         </service>
 
-        <activity
-            android:name=".activities.CopyToClipboardActivity"
-            android:theme="@android:style/Theme.NoDisplay" />
+
     </application>
 
 

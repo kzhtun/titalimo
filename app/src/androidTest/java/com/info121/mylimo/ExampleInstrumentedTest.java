@@ -1,4 +1,4 @@
-package com.info121.mylimo;
+package com.info121.titalimo;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.info121.mylimo", appContext.getPackageName());
+        assertEquals("com.info121.titalimo", appContext.getPackageName());
     }
 }
