@@ -9,6 +9,8 @@ import android.content.pm.PackageManager;
 
 import android.location.LocationManager;
 
+import android.os.Handler;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -17,7 +19,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.BounceInterpolator;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -25,11 +26,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 
 import com.github.florent37.viewanimator.AnimationBuilder;
-import com.github.florent37.viewanimator.AnimationListener;
 import com.github.florent37.viewanimator.ViewAnimator;
 import com.info121.titalimo.AbstractActivity;
 import com.info121.titalimo.App;
@@ -39,6 +38,7 @@ import com.info121.titalimo.api.APIClient;
 
 import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
+import com.info121.titalimo.services.ShowDialogService;
 import com.info121.titalimo.services.SmartLocationService;
 import com.info121.titalimo.utils.PrefDB;
 
@@ -71,6 +71,8 @@ public class LoginActivity extends AbstractActivity {
     LinearLayout mLoginLayout;
     CheckBox mRemember;
 
+    Intent dialogIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,14 +104,27 @@ public class LoginActivity extends AbstractActivity {
             return;
         }
 
-
         initializeControls();
         initializeEvents();
         animation();
 
         // Check and Redirect to Job List
-        if(!Util.isNullOrEmpty(App.userName))
-            startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
+
+        if(isGPSEnabled()){
+            if (!Util.isNullOrEmpty(App.userName))
+                startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
+        }
+
+
+      //  NotificationTest();
+
+    }
+
+    private void NotificationTest(){
+        Intent intent = new Intent(this, ShowDialogService.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        startService(intent);
     }
 
     private void initializeControls() {
@@ -129,6 +144,7 @@ public class LoginActivity extends AbstractActivity {
 
         if (prefDB.getString(App.CONST_USER_NAME) != null) {
             mUserName.setText(prefDB.getString(App.CONST_USER_NAME));
+            mRemember.setChecked(true);
         }
 
     }
@@ -207,13 +223,12 @@ public class LoginActivity extends AbstractActivity {
     @Subscribe
     public void onEvent(UpdateDriverDetailRes res) {
         if (res.getUpdatedeviceResult().equalsIgnoreCase("Success")) {
-//            Toast.makeText(getApplicationContext(), "User Name : " + mUserName.getText().toString() +
-//                    "Device ID : " + Util.getDeviceID(getApplicationContext()).toString() + " Successfully Updated.", Toast.LENGTH_LONG).show();
 
-            // openCustomTab(mmclub);
-            startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
+            if(isGPSEnabled()){
+                startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
+                mProgressBar.setVisibility(View.GONE);
+            }
 
-            mProgressBar.setVisibility(View.GONE);
         }
         Log.e(TAG, res.getUpdatedeviceResult().toString());
     }
@@ -248,14 +263,14 @@ public class LoginActivity extends AbstractActivity {
     }
 
     private void startLocationService() {
-        showAlertDialog();
-
-        Intent serviceIntent = new Intent(LoginActivity.this, SmartLocationService.class);
-        LoginActivity.this.startService(serviceIntent);
+        if (isGPSEnabled()) {
+            Intent serviceIntent = new Intent(LoginActivity.this, SmartLocationService.class);
+            LoginActivity.this.startService(serviceIntent);
+        }
     }
 
 
-    private void showAlertDialog() {
+    private boolean isGPSEnabled() {
 
         mContext = LoginActivity.this;
 
@@ -284,7 +299,10 @@ public class LoginActivity extends AbstractActivity {
 
             // Showing Alert Message
             alertDialog.show();
-        }
+
+            return false;
+        } else
+            return true;
     }
 
     @Subscribe

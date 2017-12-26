@@ -12,14 +12,15 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.REORDER_TASKS"/>
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/my_limo_launcher"
-        android:roundIcon="@mipmap/my_limo_launcher"
         android:label="@string/app_name"
+        android:roundIcon="@mipmap/my_limo_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".activities.LoginActivity">
@@ -29,10 +30,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.WebViewActivity"></activity>
+        <activity android:name=".activities.WebViewActivity" />
 
-        <service android:name="com.info121.titalimo.services.SmartLocationService"></service>
-
+        <service android:name=".services.SmartLocationService" />
+        <service android:name=".services.ShowDialogService" />
         <service android:name=".services.FirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -44,8 +45,9 @@
             </intent-filter>
         </service>
 
-
+        <activity android:name=".activities.DialogActivity"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.AppCompat.Light.Dialog"></activity>
     </application>
-
 
 </manifest>

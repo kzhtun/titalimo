@@ -4,7 +4,9 @@ package com.info121.titalimo.api;
 
 import com.info121.titalimo.models.AuthenticationReq;
 import com.info121.titalimo.models.AuthenticationRes;
+import com.info121.titalimo.models.ConfirmJobRes;
 import com.info121.titalimo.models.LoginRes;
+import com.info121.titalimo.models.RemindLaterRes;
 import com.info121.titalimo.models.SaveShowPicRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.models.UpdateDriverLocationRes;
@@ -35,5 +37,11 @@ public interface APIService {
 
     @GET("saveshowpic/{user},{job_no},{filename}")
     Call<SaveShowPicRes> saveShowPic(@Path("user") String user, @Path("job_no") String jobNo, @Path("filename") String fileName);
+
+    @GET("confirmjobreminder/{job_no}")
+    Call<ConfirmJobRes> confirmJob(@Path("job_no") String jobNo);
+
+    @GET("remindmelater/{job_no}")
+    Call<RemindLaterRes> remindLater(@Path("job_no") String jobNo);
 
 }

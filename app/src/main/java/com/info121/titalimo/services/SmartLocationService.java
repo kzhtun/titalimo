@@ -47,10 +47,6 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
 
     private Location mLocation;
 
-
-
-
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -148,9 +144,11 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
             Log.e("Date Time ... ", formattedDate);
 
 
+            App.location = mLocation;
+
             // fake location
-            mLocation.setLatitude(16.0000);
-            mLocation.setLatitude(96.0000);
+//            mLocation.setLatitude(16.0000);
+//            mLocation.setLatitude(96.0000);
 
             APIClient.UpdateDriverLocation(
                     App.userName,

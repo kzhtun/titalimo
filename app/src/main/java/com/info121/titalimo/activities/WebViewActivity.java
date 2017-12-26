@@ -189,6 +189,22 @@ public class WebViewActivity extends AbstractActivity {
             customTabsIntent.launchUrl(WebViewActivity.this, uri);
 
         }
+
+        @JavascriptInterface
+        public void showRoute(double lat, double lng) {
+
+//            String uri = "waze://?ll=16.827915,96.129936" +
+//                    "&pd_ll=16.827915,96.129936" +
+//                    "&navigate=yes";
+
+
+            String uri = "waze://?ll=" + lat + "," + lng +
+                    "&navigate=yes";
+
+            startActivity(new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri)));
+
+            Log.e("waze --> ", uri);
+        }
     }
 
     @Override

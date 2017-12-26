@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">MyLimo</string>
+    <string name="app_name">Tita Limo</string>
+
+
+    <string-array name="phones">
+        <item>0000000</item>
+        <item>1111111</item>
+        <item>2222222</item>
+        <item>3333333</item>
+    </string-array>
 </resources>
