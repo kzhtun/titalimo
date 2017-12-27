@@ -47,7 +47,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e("FCM Token ", FirebaseInstanceId.getInstance().getToken());
+     //   Log.e("FCM Token ", FirebaseInstanceId.getInstance().getToken());
 
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);

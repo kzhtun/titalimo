@@ -12,6 +12,7 @@ import android.os.PowerManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 
 import com.info121.titalimo.R;
 import com.info121.titalimo.activities.DialogActivity;
+import com.info121.titalimo.api.APIClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,37 +75,43 @@ public class ShowDialogService extends Service {
 
         //adding dialog animation sliding up and down
         dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+
+        // disable home, back key
+        dialog.setOnKeyListener(new Dialog.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialogs, int keyCode,
+                                 KeyEvent event) {
+
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    return true;
+                }
+                if (keyCode == KeyEvent.KEYCODE_HOME) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+
+        // show dialog
         dialog.show();
 
+
+        mMessage = (TextView) dialog.findViewById(R.id.message);
+        mPhones = (Spinner) dialog.findViewById(R.id.phone_spinner);
         mCall = (Button) dialog.findViewById(R.id.btn_call);
         mConfirm = (Button) dialog.findViewById(R.id.btn_confirm);
         mDismiss = (Button) dialog.findViewById(R.id.btn_remind_later);
-        mMessage = (TextView) dialog.findViewById(R.id.message);
-        mPhones = (Spinner) dialog.findViewById(R.id.phone_spinner);
 
 
-        mDismiss.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("TAG", "Dismiss Click");
-                dialog.dismiss();
-            }
-        });
 
-
-        mCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                phoneCall(mPhones.getSelectedItem().toString());
-                dialog.dismiss();
-            }
-        });
 
         // Display Message
         Bundle bundle = intent.getExtras();
 
-        String phones = intent.getExtras().getString(PHONE);
-        String message = intent.getExtras().getString(MESSAGE);
+        final String phones = intent.getExtras().getString(PHONE);
+        final String message = intent.getExtras().getString(MESSAGE);
+        final String jobNo = intent.getExtras().getString(JOB_NO);
 
 
 //        // for testing purpose only
@@ -115,14 +123,37 @@ public class ShowDialogService extends Service {
         mMessage.setText(message);
         mPhones.setAdapter(fillPhoneNumbers(phones));
 
+
+        mCall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                phoneCall(mPhones.getSelectedItem().toString());
+                APIClient.ConfirmJob(jobNo);
+            }
+        });
+
+        mDismiss.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                APIClient.RemindLater(jobNo);
+            }
+        });
+
+        mConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                APIClient.ConfirmJob(jobNo);
+            }
+        });
+
+
         // Wake Screen
-        PowerManager.WakeLock screenLock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG");
+        PowerManager.WakeLock screenLock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG");
         screenLock.acquire();
-
         screenLock.release();
-
-
     }
 
     private ArrayAdapter<String> fillPhoneNumbers(String phones) {
@@ -146,9 +177,14 @@ public class ShowDialogService extends Service {
 
         Uri number = Uri.parse("tel:" + phoneNo);
         Intent callIntent = new Intent(Intent.ACTION_DIAL, number);
-        startActivity(callIntent);
+        callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        Toast.makeText(getApplicationContext(), "Phone Call .... to  " + phoneNo, Toast.LENGTH_SHORT).show();
+        try {
+            startActivity(callIntent);
+            Toast.makeText(getApplicationContext(), "Phone Call .... to  " + phoneNo, Toast.LENGTH_SHORT).show();
+        }catch (android.content.ActivityNotFoundException ex){
+            Toast.makeText(getApplicationContext(), ex.getMessage().toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void createDialogActivity() {

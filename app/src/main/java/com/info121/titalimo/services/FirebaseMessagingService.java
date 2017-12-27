@@ -79,8 +79,6 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                         remoteMessage.getData().get("displayMsg")
                 );
             }
-
-            Log.e("TAG", remoteMessage.getData().get("jobNo"));
         }
 
         super.onMessageReceived(remoteMessage);
