@@ -1,20 +1,18 @@
 package com.info121.titalimo.api;
 
 
-
-import com.info121.titalimo.models.AuthenticationReq;
-import com.info121.titalimo.models.AuthenticationRes;
 import com.info121.titalimo.models.ConfirmJobRes;
 import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.RemindLaterRes;
 import com.info121.titalimo.models.SaveShowPicRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.models.UpdateDriverLocationRes;
+import com.info121.titalimo.models.product;
+
+import java.util.List;
 
 import retrofit2.Call;
-import retrofit2.http.Body;
 import retrofit2.http.GET;
-import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 /**
@@ -44,4 +42,6 @@ public interface APIService {
     @GET("remindmelater/{job_no}")
     Call<RemindLaterRes> remindLater(@Path("job_no") String jobNo);
 
+    @GET("product")
+    Call<List<product>> getProduct();
 }

@@ -1,7 +1,6 @@
 package com.info121.titalimo.services;
 
 import android.app.Dialog;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,8 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -18,7 +15,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,8 +25,6 @@ import com.info121.titalimo.api.APIClient;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.view.View.GONE;
 
 public class ShowDialogService extends Service {
     public static final String JOB_NO = "JOB_NO";
@@ -102,8 +96,6 @@ public class ShowDialogService extends Service {
         mCall = (Button) dialog.findViewById(R.id.btn_call);
         mConfirm = (Button) dialog.findViewById(R.id.btn_confirm);
         mDismiss = (Button) dialog.findViewById(R.id.btn_remind_later);
-
-
 
 
         // Display Message

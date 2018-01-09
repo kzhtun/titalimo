@@ -10,6 +10,9 @@ import com.info121.titalimo.models.RemindLaterRes;
 import com.info121.titalimo.models.SaveShowPicRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.models.UpdateDriverLocationRes;
+import com.info121.titalimo.models.product;
+
+import java.util.List;
 
 import retrofit2.Call;
 
@@ -52,14 +55,21 @@ public class APIClient {
     }
 
     public static void ConfirmJob(String jobNo) {
-        Call<ConfirmJobRes> call = RestClient.LIMO().getApiService().confirmJob( jobNo);
+        Call<ConfirmJobRes> call = RestClient.LIMO().getApiService().confirmJob(jobNo);
         call.enqueue(new APICallback<ConfirmJobRes>() {
         });
     }
 
     public static void RemindLater(String jobNo) {
-        Call<RemindLaterRes> call = RestClient.LIMO().getApiService().remindLater( jobNo);
+        Call<RemindLaterRes> call = RestClient.LIMO().getApiService().remindLater(jobNo);
         call.enqueue(new APICallback<RemindLaterRes>() {
+        });
+    }
+
+
+    public static void GetProduct() {
+        Call<List<product>> call = RestClient.LIMO().getApiService().getProduct();
+        call.enqueue(new APICallback<List<product>>() {
         });
     }
 }

@@ -1,34 +1,21 @@
 package com.info121.titalimo.services;
 
-import android.Manifest;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Handler;
 import android.os.IBinder;
-import android.provider.Settings;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.info121.titalimo.App;
-import com.info121.titalimo.activities.LoginActivity;
 import com.info121.titalimo.api.APIClient;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 import io.nlopez.smartlocation.OnLocationUpdatedListener;
 import io.nlopez.smartlocation.SmartLocation;
@@ -93,6 +80,7 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
         SmartLocation.with(getApplicationContext()).location()
                 .config(mParams)
                 .start(this);
+
 
         startTimer();
         Log.e("Start Service ", "");

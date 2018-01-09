@@ -5,10 +5,8 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.info121.titalimo.utils.Util;
 
 
@@ -18,7 +16,8 @@ import com.info121.titalimo.utils.Util;
 
 public class App extends Application {
 // LIVE
-    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:81/restapi/MyLimoService.svc/";
+   public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:81/restapi/MyLimoService.svc/";
+//    public static final String CONST_REST_API_URL = "http://192.168.137.1/APITest/api/";
     public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:81/iops_portal/";
 
 

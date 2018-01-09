@@ -1,45 +1,38 @@
 package com.info121.titalimo.activities;
 
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.location.Location;
-import android.location.LocationListener;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Handler;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
-import android.telephony.SmsManager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.RotateAnimation;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
-import android.webkit.PermissionRequest;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.info121.titalimo.AbstractActivity;
 import com.info121.titalimo.App;
-import com.info121.titalimo.MainActivity;
 import com.info121.titalimo.R;
-import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.SaveShowPicRes;
 import com.info121.titalimo.utils.FtpHelper;
 import com.info121.titalimo.utils.PrefDB;
@@ -62,6 +55,7 @@ public class WebViewActivity extends AbstractActivity {
     WebView mWebView;
     Toolbar mToolbar;
     ProgressBar mProgressBar;
+    Context mContext;
 
     String mFileName;
     String mJobNo;
@@ -101,6 +95,8 @@ public class WebViewActivity extends AbstractActivity {
         mWebView.setInitialScale(100);
         mWebView.addJavascriptInterface(new JavaScriptInterface(this), "Android");
 
+        mContext = WebViewActivity.this;
+
         url = String.format(App.CONST_URL_JOB_LIST, App.userName);
 
         mWebView.setWebViewClient(new WebViewClient() {
@@ -115,6 +111,10 @@ public class WebViewActivity extends AbstractActivity {
         mWebView.loadUrl(url);
 
         App.targetContent = WebViewActivity.this;
+
+
+        //16.8293621,96.1528663
+        showAppSelectionDialog(16.8293621,96.1528663);
     }
 
     public class JavaScriptInterface {
@@ -192,19 +192,84 @@ public class WebViewActivity extends AbstractActivity {
 
         @JavascriptInterface
         public void showRoute(double lat, double lng) {
-
-//            String uri = "waze://?ll=16.827915,96.129936" +
-//                    "&pd_ll=16.827915,96.129936" +
-//                    "&navigate=yes";
-
-
-            String uri = "waze://?ll=" + lat + "," + lng +
-                    "&navigate=yes";
-
-            startActivity(new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri)));
-
-            Log.e("waze --> ", uri);
+            showAppSelectionDialog(lat, lng);
         }
+    }
+
+
+    public void showAppSelectionDialog(final double lat, final double lng) {
+        Button mGoogleMap, mWaze;
+
+        final Dialog dialog = new Dialog(this, R.style.Theme_AppCompat);
+        dialog.setContentView(R.layout.dialog_app_selection);
+        dialog.setTitle("App Selection");
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        Window window = dialog.getWindow();
+        window.setAttributes(lp);
+        window.setGravity(Gravity.CENTER);
+
+        //adding dialog animation sliding up and down
+        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+
+        mGoogleMap = (Button) dialog.findViewById(R.id.btn_google_map);
+        mWaze = (Button) dialog.findViewById(R.id.btn_waze);
+
+
+        //gettting icon
+        try{
+            String waze = "com.waze";
+            String gMap = "com.google.android.apps.maps";
+
+            Drawable wazeIcon =  mContext.getPackageManager().getApplicationIcon(waze);
+            Drawable gMapIcon =  mContext.getPackageManager().getApplicationIcon(gMap);
+
+            // Assign icon
+            mGoogleMap.setBackground(gMapIcon);
+            mWaze.setBackground(wazeIcon);
+        }
+        catch (PackageManager.NameNotFoundException ne)
+        {
+
+        }
+
+        mGoogleMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                showRouteOnGoogleMap(lat, lng);
+            }
+        });
+
+        mWaze.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                showRouteOnWaze(lat, lng);
+            }
+        });
+
+        dialog.show();
+    }
+
+    public void showRouteOnGoogleMap(double lat, double lng) {
+        String uri = "http://maps.google.com/maps?saddr=" +
+                App.location.getLatitude() + "," +
+                App.location.getLongitude() + "&daddr=" +
+                lat + "," + lng;
+
+        Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+        intent.setPackage("com.google.android.apps.maps");
+        startActivity(intent);
+    }
+
+    public void showRouteOnWaze(double lat, double lng) {
+        String uri = "waze://?ll=" + lat + "," + lng +
+                "&navigate=yes";
+
+        startActivity(new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri)));
     }
 
     @Override
@@ -300,7 +365,24 @@ public class WebViewActivity extends AbstractActivity {
         return cursor.getString(idx);
     }
 
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
 
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+
+        alertDialog.setTitle("Warning");
+        alertDialog.setMessage("Please do not use this function in My Limo application.");
+
+        // On pressing Settings button
+        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        alertDialog.show();
+    }
 }
 
 

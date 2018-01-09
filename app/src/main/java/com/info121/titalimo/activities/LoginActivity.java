@@ -4,18 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-
 import android.content.pm.PackageManager;
-
 import android.location.LocationManager;
-
-import android.os.Handler;
-import android.os.PowerManager;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
@@ -27,21 +22,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
-
 import com.github.florent37.viewanimator.AnimationBuilder;
 import com.github.florent37.viewanimator.ViewAnimator;
 import com.info121.titalimo.AbstractActivity;
 import com.info121.titalimo.App;
-
 import com.info121.titalimo.R;
 import com.info121.titalimo.api.APIClient;
-
 import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.services.ShowDialogService;
 import com.info121.titalimo.services.SmartLocationService;
 import com.info121.titalimo.utils.PrefDB;
-
 import com.info121.titalimo.utils.Util;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -103,6 +94,8 @@ public class LoginActivity extends AbstractActivity {
             ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_PERMISSION_ID);
             return;
         }
+
+      //  APIClient.GetProduct();
 
         initializeControls();
         initializeEvents();
