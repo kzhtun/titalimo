@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -30,6 +31,7 @@ import com.info121.titalimo.R;
 import com.info121.titalimo.api.APIClient;
 import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
+import com.info121.titalimo.models.VersionRes;
 import com.info121.titalimo.services.ShowDialogService;
 import com.info121.titalimo.services.SmartLocationService;
 import com.info121.titalimo.utils.PrefDB;
@@ -61,8 +63,6 @@ public class LoginActivity extends AbstractActivity {
     ImageView mBackground, mLogo;
     LinearLayout mLoginLayout;
     CheckBox mRemember;
-
-    Intent dialogIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,8 +108,7 @@ public class LoginActivity extends AbstractActivity {
                 startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
         }
 
-
-      //  NotificationTest();
+        APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
 
     }
 
@@ -175,6 +174,8 @@ public class LoginActivity extends AbstractActivity {
         });
 
 
+
+
 //
 //        mLogin.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -212,6 +213,8 @@ public class LoginActivity extends AbstractActivity {
         }
 
     }
+
+
 
     @Subscribe
     public void onEvent(UpdateDriverDetailRes res) {
@@ -315,5 +318,38 @@ public class LoginActivity extends AbstractActivity {
         alertDialog.show();
     }
 
+    @Subscribe
+    public void onEvent(VersionRes res) {
+        if(res.getGetversionResult().equalsIgnoreCase("Outdated")){
+            showAlertDialog();
+        }
+    }
 
+    private void showAlertDialog(){
+        AlertDialog dialog = new AlertDialog.Builder(mContext)
+                .setTitle(R.string.AppName)
+                .setMessage(R.string.message_version_outdated)
+                .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        finishAffinity();
+                    }
+                })
+                .setNegativeButton("Go to Play Store", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finishAffinity();
+                        final String appPackageName = getPackageName(); // getPackageName() from Context or Activity object
+                        try {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                        } catch (android.content.ActivityNotFoundException anfe) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                        }
+                    }
+                })
+                .create();
+
+        dialog.show();
+    }
 }

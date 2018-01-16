@@ -15,13 +15,11 @@ import com.info121.titalimo.utils.Util;
  */
 
 public class App extends Application {
-// LIVE
-   public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:81/restapi/MyLimoService.svc/";
-//    public static final String CONST_REST_API_URL = "http://192.168.137.1/APITest/api/";
+    // LIVE
+    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:81/restapi/MyLimoService.svc/";
     public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:81/iops_portal/";
 
-
-   // DEV
+//    // DEV
 //    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:82/restapi/MyLimoService.svc/";
 //    public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:82/iops_portal/";
 
@@ -46,7 +44,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-     //   Log.e("FCM Token ", FirebaseInstanceId.getInstance().getToken());
+        //   Log.e("FCM Token ", FirebaseInstanceId.getInstance().getToken());
 
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);

@@ -10,11 +10,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import com.google.firebase.messaging.RemoteMessage;
 import com.info121.titalimo.R;
-import com.info121.titalimo.activities.DialogActivity;
 import com.info121.titalimo.activities.WebViewActivity;
 
 /**
@@ -60,13 +58,6 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     public void onMessageReceived(RemoteMessage remoteMessage) {
 
         if (remoteMessage.getData() != null) {
-//            Intent dialogIntent = new Intent(this, ShowDialogService.class);
-//            startService(dialogIntent);
-
-//            Intent dialogIntent = new Intent(this, DialogActivity.class);
-//            startActivity(dialogIntent);
-
-// size 2
 
             if (remoteMessage.getData().size() == 2) {
                 showNotification(remoteMessage.getData().get("title"), remoteMessage.getData().get("body"));

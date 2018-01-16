@@ -7,6 +7,7 @@ import com.info121.titalimo.models.RemindLaterRes;
 import com.info121.titalimo.models.SaveShowPicRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.models.UpdateDriverLocationRes;
+import com.info121.titalimo.models.VersionRes;
 import com.info121.titalimo.models.product;
 
 import java.util.List;
@@ -29,8 +30,8 @@ public interface APIService {
     Call<UpdateDriverDetailRes> updateDriverDetail(@Path("user") String user, @Path("deviceId") String deviceId,@Path("deviceType") String deviceType, @Path("fcm_token") String fcm_token);
 
     //amad,1.299654,103.855107,0
-    @GET("getdriverlocation/{user},{latitude},{longitude},{datetime},{status}")
-    Call<UpdateDriverLocationRes> updateDriverLocation(@Path("user") String user, @Path("latitude") String latitude,@Path("longitude") String longitude, @Path("status") int status);
+    @GET("getdriverlocation/{user},{latitude},{longitude},{status},{address}")
+    Call<UpdateDriverLocationRes> updateDriverLocation(@Path("user") String user, @Path("latitude") String latitude,@Path("longitude") String longitude, @Path("status") int status, @Path("address") String addresss);
 
 
     @GET("saveshowpic/{user},{job_no},{filename}")
@@ -44,4 +45,7 @@ public interface APIService {
 
     @GET("product")
     Call<List<product>> getProduct();
+
+    @GET("getversion/AndriodV-{versionCode}")
+    Call<VersionRes> checkVersion(@Path("versionCode") String versionCode);
 }

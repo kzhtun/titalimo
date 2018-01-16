@@ -3,14 +3,13 @@ package com.info121.titalimo.utils;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
-
-import com.info121.titalimo.R;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -43,13 +42,13 @@ public class Util {
         }
     }
 
-    public static String getDeviceID(Context context){
+    public static String getDeviceID(Context context) {
         return Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);
     }
 
     public static boolean isNullOrEmpty(String string) {
-        return (string == null || string.length()==0 || string.toString().trim()== "");
+        return (string == null || string.length() == 0 || string.toString().trim() == "");
     }
 
     static String printStackTrace(@NonNull Throwable exception) {
@@ -72,5 +71,16 @@ public class Util {
         return string.replaceAll("[^a-zA-Z0-9]", "");
     }
 
+    public static int getVersionCode(Context context) {
+        int versionCode = -1;
+        try {
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            versionCode = packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return versionCode;
+    }
 
 }

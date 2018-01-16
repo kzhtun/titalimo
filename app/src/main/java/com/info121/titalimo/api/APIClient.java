@@ -10,6 +10,7 @@ import com.info121.titalimo.models.RemindLaterRes;
 import com.info121.titalimo.models.SaveShowPicRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.models.UpdateDriverLocationRes;
+import com.info121.titalimo.models.VersionRes;
 import com.info121.titalimo.models.product;
 
 import java.util.List;
@@ -42,8 +43,8 @@ public class APIClient {
     }
 
     //("getdriverlocation/{user},{latitude},{longitude},{status}")
-    public static void UpdateDriverLocation(String userName, String latitude, String longitude, int status) {
-        Call<UpdateDriverLocationRes> call = RestClient.LIMO().getApiService().updateDriverLocation(userName, latitude, longitude, status);
+    public static void UpdateDriverLocation(String userName, String latitude, String longitude, int status, String address) {
+        Call<UpdateDriverLocationRes> call = RestClient.LIMO().getApiService().updateDriverLocation(userName, latitude, longitude, status, address);
         call.enqueue(new APICallback<UpdateDriverLocationRes>() {
         });
     }
@@ -70,6 +71,12 @@ public class APIClient {
     public static void GetProduct() {
         Call<List<product>> call = RestClient.LIMO().getApiService().getProduct();
         call.enqueue(new APICallback<List<product>>() {
+        });
+    }
+
+    public static void CheckVersion(String versionCode) {
+        Call<VersionRes> call = RestClient.LIMO().getApiService().checkVersion(versionCode);
+        call.enqueue(new APICallback<VersionRes>() {
         });
     }
 }

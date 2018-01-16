@@ -33,9 +33,12 @@ import android.widget.Toast;
 import com.info121.titalimo.AbstractActivity;
 import com.info121.titalimo.App;
 import com.info121.titalimo.R;
+import com.info121.titalimo.api.APIClient;
 import com.info121.titalimo.models.SaveShowPicRes;
+import com.info121.titalimo.models.VersionRes;
 import com.info121.titalimo.utils.FtpHelper;
 import com.info121.titalimo.utils.PrefDB;
+import com.info121.titalimo.utils.Util;
 
 import org.greenrobot.eventbus.Subscribe;
 
@@ -56,6 +59,7 @@ public class WebViewActivity extends AbstractActivity {
     Toolbar mToolbar;
     ProgressBar mProgressBar;
     Context mContext;
+    Button mGoogleMap, mWaze;
 
     String mFileName;
     String mJobNo;
@@ -70,6 +74,9 @@ public class WebViewActivity extends AbstractActivity {
         setContentView(R.layout.activity_web_view);
 
         initializeControls();
+
+        // call api to checkVersion
+        APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
     }
 
     void initializeControls() {
@@ -112,9 +119,9 @@ public class WebViewActivity extends AbstractActivity {
 
         App.targetContent = WebViewActivity.this;
 
-
-        //16.8293621,96.1528663
-        showAppSelectionDialog(16.8293621,96.1528663);
+//        showAlertDialog();
+//        //16.8293621,96.1528663
+//        showAppSelectionDialog(16.8293621,96.1528663);
     }
 
     public class JavaScriptInterface {
@@ -198,7 +205,6 @@ public class WebViewActivity extends AbstractActivity {
 
 
     public void showAppSelectionDialog(final double lat, final double lng) {
-        Button mGoogleMap, mWaze;
 
         final Dialog dialog = new Dialog(this, R.style.Theme_AppCompat);
         dialog.setContentView(R.layout.dialog_app_selection);
@@ -218,22 +224,12 @@ public class WebViewActivity extends AbstractActivity {
         mWaze = (Button) dialog.findViewById(R.id.btn_waze);
 
 
-        //gettting icon
-        try{
-            String waze = "com.waze";
-            String gMap = "com.google.android.apps.maps";
+        if(!hasGoogleMap())
+            mGoogleMap.setVisibility(View.GONE);
 
-            Drawable wazeIcon =  mContext.getPackageManager().getApplicationIcon(waze);
-            Drawable gMapIcon =  mContext.getPackageManager().getApplicationIcon(gMap);
+        if(!hasWaze())
+            mWaze.setVisibility(View.GONE);
 
-            // Assign icon
-            mGoogleMap.setBackground(gMapIcon);
-            mWaze.setBackground(wazeIcon);
-        }
-        catch (PackageManager.NameNotFoundException ne)
-        {
-
-        }
 
         mGoogleMap.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -253,6 +249,38 @@ public class WebViewActivity extends AbstractActivity {
 
         dialog.show();
     }
+
+    public boolean hasGoogleMap(){
+        try{
+            String gMap = "com.google.android.apps.maps";
+            Drawable gMapIcon =  mContext.getPackageManager().getApplicationIcon(gMap);
+
+            // Assign icon
+            mGoogleMap.setBackground(gMapIcon);
+            return true;
+        }
+        catch (PackageManager.NameNotFoundException ne)
+        {
+            return false;
+        }
+    }
+
+    public boolean hasWaze(){
+        try{
+            String waze = "com.waze";
+            Drawable wazeIcon =  mContext.getPackageManager().getApplicationIcon(waze);
+
+            // Assign icon
+            mWaze.setBackground(wazeIcon);
+            return true;
+        }
+        catch (PackageManager.NameNotFoundException ne)
+        {
+            return false;
+        }
+    }
+
+
 
     public void showRouteOnGoogleMap(double lat, double lng) {
         String uri = "http://maps.google.com/maps?saddr=" +
@@ -382,6 +410,41 @@ public class WebViewActivity extends AbstractActivity {
         });
 
         alertDialog.show();
+    }
+
+    @Subscribe
+    public void onEvent(VersionRes res) {
+        if(res.getGetversionResult().equalsIgnoreCase("Outdated")){
+            showAlertDialog();
+        }
+    }
+
+    private void showAlertDialog(){
+        AlertDialog dialog = new AlertDialog.Builder(mContext)
+                .setTitle(R.string.AppName)
+                .setMessage(R.string.message_version_outdated)
+                .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        finishAffinity();
+                    }
+                })
+                .setNegativeButton("Go to Play Store", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finishAffinity();
+                        final String appPackageName = getPackageName(); // getPackageName() from Context or Activity object
+                        try {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                        } catch (android.content.ActivityNotFoundException anfe) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                        }
+                    }
+                })
+                .create();
+
+        dialog.show();
     }
 }
 

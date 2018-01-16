@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.IBinder;
@@ -13,9 +15,12 @@ import android.util.Log;
 
 import com.info121.titalimo.App;
 import com.info121.titalimo.api.APIClient;
+import com.info121.titalimo.utils.Util;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 import io.nlopez.smartlocation.OnLocationUpdatedListener;
 import io.nlopez.smartlocation.SmartLocation;
@@ -81,9 +86,11 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
                 .config(mParams)
                 .start(this);
 
-
+        updateToServer();
         startTimer();
         Log.e("Start Service ", "");
+
+        // update location first time
     }
 
     private void stopLocation() {
@@ -105,7 +112,7 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
         App.mRunnable = new Runnable() {
             @Override
             public void run() {
-                Log.e("Timer " , "is Running");
+                Log.e("Timer ", "is Running");
                 if (App.userName.length() > 0)
                     updateToServer();
                 App.mHandler.postDelayed(this, App.timerDelay);
@@ -142,8 +149,33 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
                     App.userName,
                     String.valueOf(mLocation.getLatitude()),
                     String.valueOf(mLocation.getLongitude()),
-                    (isGpsEnabled()) ? 1 : 0
+                    (isGpsEnabled()) ? 1 : 0,
+                    getCompleteAddressString(mLocation)
             );
+
+            // call api to checkVersion
+            APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
         }
+    }
+
+    private String getCompleteAddressString(Location location) {
+        String strAdd = "";
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            if (addresses != null) {
+
+                strAdd = addresses.get(0).getFeatureName();
+                strAdd += ", " + addresses.get(0).getThoroughfare();
+                strAdd += ", " + addresses.get(0).getLocality();
+                strAdd += ", " + addresses.get(0).getCountryName();
+
+            } else {
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        return strAdd;
     }
 }
