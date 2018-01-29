@@ -22,6 +22,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.github.florent37.viewanimator.AnimationBuilder;
 import com.github.florent37.viewanimator.ViewAnimator;
@@ -54,6 +55,7 @@ public class LoginActivity extends AbstractActivity {
 
     Button mLogin;
     EditText mUserName;
+    TextView mUiVersion, mApiVersion;
 
     PrefDB prefDB = null;
     ProgressBar mProgressBar;
@@ -122,6 +124,8 @@ public class LoginActivity extends AbstractActivity {
     private void initializeControls() {
         mLogin = (Button) findViewById(R.id.login);
         mUserName = (EditText) findViewById(R.id.user_name);
+        mUiVersion = (TextView) findViewById(R.id.ui_version);
+        mApiVersion = (TextView) findViewById(R.id.api_version);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         mBackground = (ImageView) findViewById(R.id.image_background);
@@ -138,6 +142,9 @@ public class LoginActivity extends AbstractActivity {
             mUserName.setText(prefDB.getString(App.CONST_USER_NAME));
             mRemember.setChecked(true);
         }
+
+        mApiVersion.setText("Api " + Util.getVersionCode(mContext));
+        mUiVersion.setText( "Ver " + Util.getVersionName(mContext));
 
     }
 
@@ -174,6 +181,17 @@ public class LoginActivity extends AbstractActivity {
         });
 
 
+//        mLogin.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String uri = "https://waze.com/ul?q=pyi" +
+//                        "&navigate=yes";
+//
+//                startActivity(new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri)));
+//            }
+//        });
+
+
 
 
 //
@@ -190,22 +208,29 @@ public class LoginActivity extends AbstractActivity {
     @Subscribe
     public void onEvent(LoginRes res) {
         if (res.getValidatedriverResult().getValid().equalsIgnoreCase("Valid")) {
-            APIClient.UpdateDriverDetail(mUserName.getText().toString(), Util.getDeviceID(getApplicationContext()));
+            // Add to Appication Varialbles
+            App.userName =  getUserName(mUserName.getText().toString());
+            App.deviceID = Util.getDeviceID(getApplicationContext());
+            App.timerDelay = Long.valueOf(res.getValidatedriverResult().getDuration());
 
             if (mRemember.isChecked())
                 prefDB.putString(App.CONST_USER_NAME, mUserName.getText().toString());
             else
                 prefDB.remove(App.CONST_USER_NAME);
 
-            // Add to Appication Varialbles
-            App.userName = mUserName.getText().toString();
-            App.deviceID = Util.getDeviceID(getApplicationContext());
-            App.timerDelay = Long.valueOf(res.getValidatedriverResult().getDuration());
-
             prefDB.putBoolean(App.CONST_ALREADY_LOGIN, true);
 
-            // Start Locaiton Service
-            startLocationService();
+            // For Driver Only
+            if(!mUserName.getText().toString().contains("~")){
+                APIClient.UpdateDriverDetail(mUserName.getText().toString(), Util.getDeviceID(getApplicationContext()));
+                // Start Locaiton Service
+                startLocationService();
+            }else{ // Ghost User
+                if(isGPSEnabled()){
+                    startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
+                    mProgressBar.setVisibility(View.GONE);
+                }
+            }
 
         } else {
             mUserName.setError("Wrong user name");
@@ -213,6 +238,14 @@ public class LoginActivity extends AbstractActivity {
         }
 
     }
+
+    private String getUserName(String userName){
+        if(userName.contains("~")){
+            return userName.split("~")[0];
+        }else
+            return userName;
+    }
+
 
 
 

@@ -86,9 +86,26 @@
             </LinearLayout>
 
 
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="200dp" />
+
+            <TextView android:id="@+id/api_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right|bottom"
+                android:layout_marginRight="16dp"
+                android:text="ver 0.0"
+                android:textColor="@color/oil"/>
+
+            <TextView android:id="@+id/ui_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right|bottom"
+                android:layout_marginRight="16dp"
+                android:text="ver 0.0"
+                android:textColor="@color/oil"/>
         </LinearLayout>
 
 

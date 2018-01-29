@@ -16,12 +16,12 @@ import com.info121.titalimo.utils.Util;
 
 public class App extends Application {
     // LIVE
-    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:81/restapi/MyLimoService.svc/";
-    public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:81/iops_portal/";
+//    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:81/restapi/MyLimoService.svc/";
+//    public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:81/iops_portal/";
 
 //    // DEV
-//    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:82/restapi/MyLimoService.svc/";
-//    public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:82/iops_portal/";
+    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:82/restapi/MyLimoService.svc/";
+    public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:82/iops_portal/";
 
 
     public static final String CONST_URL_JOB_LIST = CONST_WEBSITE_URL + "iDriverJobsList.aspx?LogInUser=%s";

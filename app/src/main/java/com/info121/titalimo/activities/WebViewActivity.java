@@ -15,6 +15,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -27,6 +28,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -59,7 +61,9 @@ public class WebViewActivity extends AbstractActivity {
     Toolbar mToolbar;
     ProgressBar mProgressBar;
     Context mContext;
-    Button mGoogleMap, mWaze;
+    Button mGoogleMap, mWaze, mButton1, mButton2, mButton3;
+
+    LinearLayout mAppListContainer;
 
     String mFileName;
     String mJobNo;
@@ -77,9 +81,12 @@ public class WebViewActivity extends AbstractActivity {
 
         // call api to checkVersion
         APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
+
+        showFlightAppsDialog();
     }
 
     void initializeControls() {
+
         prefDB = new PrefDB(getApplicationContext());
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -124,87 +131,7 @@ public class WebViewActivity extends AbstractActivity {
 //        showAppSelectionDialog(16.8293621,96.1528663);
     }
 
-    public class JavaScriptInterface {
-        private final WebViewActivity webViewActivity;
-
-        JavaScriptInterface(WebViewActivity webViewActivity) {
-            this.webViewActivity = webViewActivity;
-        }
-
-        @JavascriptInterface
-        public void openCamera(final String fileName) {
-            Log.e("Test : ", fileName);
-        }
-
-        @JavascriptInterface
-        public void openCamera(final String fileName, final String jobNo) {
-
-            mFileName = fileName;
-            mJobNo = jobNo;
-
-            webViewActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-                    intent.putExtra("filename", fileName);
-                    startActivityForResult(intent, REQUEST_CAMERA_IMAGE);
-                }
-            });
-        }
-
-        @JavascriptInterface
-        public void phoneCall(String phoneNo) {
-
-            Uri number = Uri.parse("tel:" + phoneNo);
-            Intent callIntent = new Intent(Intent.ACTION_DIAL, number);
-            startActivity(callIntent);
-
-            Toast.makeText(getApplicationContext(), "Phone Call .... to  " + phoneNo, Toast.LENGTH_SHORT).show();
-        }
-
-        @JavascriptInterface
-        public void sendSMS(String phoneNo) {
-            String msg = "";
-            Uri number = Uri.parse("sms:" + phoneNo);
-            Intent smsIntent = new Intent(Intent.ACTION_VIEW, number);
-            startActivity(smsIntent);
-
-            Toast.makeText(getApplicationContext(), "Send SMS .... to  " + phoneNo, Toast.LENGTH_SHORT).show();
-        }
-
-        @JavascriptInterface
-        public void openFile(String url) {
-            Uri uri = Uri.parse(url);
-
-            // create an intent builder
-            CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
-
-            // Begin customizing
-            // set toolbar colors
-            intentBuilder.setToolbarColor(ContextCompat.getColor(WebViewActivity.this, R.color.colorPrimary));
-            intentBuilder.setSecondaryToolbarColor(ContextCompat.getColor(WebViewActivity.this, R.color.colorPrimaryDark));
-
-            // set start and exit animations
-            //            intentBuilder.setStartAnimations(this, R.anim.slide_in_right, R.anim.slide_out_left);
-            //            intentBuilder.setExitAnimations(this, android.R.anim.slide_in_left,
-            //                    android.R.anim.slide_out_right);
-
-            // build custom tabs intent
-            CustomTabsIntent customTabsIntent = intentBuilder.build();
-
-            // launch the url
-            customTabsIntent.launchUrl(WebViewActivity.this, uri);
-
-        }
-
-        @JavascriptInterface
-        public void showRoute(double lat, double lng) {
-            showAppSelectionDialog(lat, lng);
-        }
-    }
-
-
-    public void showAppSelectionDialog(final double lat, final double lng) {
+    public void showAppSelectionDialog(final double lat, final double lng, final String address) {
 
         final Dialog dialog = new Dialog(this, R.style.Theme_AppCompat);
         dialog.setContentView(R.layout.dialog_app_selection);
@@ -224,10 +151,10 @@ public class WebViewActivity extends AbstractActivity {
         mWaze = (Button) dialog.findViewById(R.id.btn_waze);
 
 
-        if(!hasGoogleMap())
+        if (!hasGoogleMap())
             mGoogleMap.setVisibility(View.GONE);
 
-        if(!hasWaze())
+        if (!hasWaze())
             mWaze.setVisibility(View.GONE);
 
 
@@ -243,43 +170,39 @@ public class WebViewActivity extends AbstractActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                showRouteOnWaze(lat, lng);
+                showRouteOnWaze(lat, lng, address);
             }
         });
 
         dialog.show();
     }
 
-    public boolean hasGoogleMap(){
-        try{
+
+    public boolean hasGoogleMap() {
+        try {
             String gMap = "com.google.android.apps.maps";
-            Drawable gMapIcon =  mContext.getPackageManager().getApplicationIcon(gMap);
+            Drawable gMapIcon = mContext.getPackageManager().getApplicationIcon(gMap);
 
             // Assign icon
             mGoogleMap.setBackground(gMapIcon);
             return true;
-        }
-        catch (PackageManager.NameNotFoundException ne)
-        {
+        } catch (PackageManager.NameNotFoundException ne) {
             return false;
         }
     }
 
-    public boolean hasWaze(){
-        try{
+    public boolean hasWaze() {
+        try {
             String waze = "com.waze";
-            Drawable wazeIcon =  mContext.getPackageManager().getApplicationIcon(waze);
+            Drawable wazeIcon = mContext.getPackageManager().getApplicationIcon(waze);
 
             // Assign icon
             mWaze.setBackground(wazeIcon);
             return true;
-        }
-        catch (PackageManager.NameNotFoundException ne)
-        {
+        } catch (PackageManager.NameNotFoundException ne) {
             return false;
         }
     }
-
 
 
     public void showRouteOnGoogleMap(double lat, double lng) {
@@ -293,11 +216,16 @@ public class WebViewActivity extends AbstractActivity {
         startActivity(intent);
     }
 
-    public void showRouteOnWaze(double lat, double lng) {
-        String uri = "waze://?ll=" + lat + "," + lng +
+    public void showRouteOnWaze(double lat, double lng, String address) {
+//        String uri = "waze://?ll=" + lat + "," + lng +
+//                "&navigate=yes";
+
+        String uri = "https://waze.com/ul?q=" + address +
                 "&navigate=yes";
 
-        startActivity(new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri)));
+        Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+        intent.setPackage("com.waze");
+        startActivity(intent);
     }
 
     @Override
@@ -414,12 +342,12 @@ public class WebViewActivity extends AbstractActivity {
 
     @Subscribe
     public void onEvent(VersionRes res) {
-        if(res.getGetversionResult().equalsIgnoreCase("Outdated")){
+        if (res.getGetversionResult().equalsIgnoreCase("Outdated")) {
             showAlertDialog();
         }
     }
 
-    private void showAlertDialog(){
+    private void showAlertDialog() {
         AlertDialog dialog = new AlertDialog.Builder(mContext)
                 .setTitle(R.string.AppName)
                 .setMessage(R.string.message_version_outdated)
@@ -445,6 +373,148 @@ public class WebViewActivity extends AbstractActivity {
                 .create();
 
         dialog.show();
+    }
+
+    public Drawable getAppIcon(String packageName) {
+        try {
+            return mContext.getPackageManager().getApplicationIcon(packageName);
+        } catch (PackageManager.NameNotFoundException ne) {
+            return null;
+        }
+    }
+
+    private void showFlightAppsDialog() {
+        String flightList[] = "com.flightradar24free, com.changiairport.cagapp, com.flightaware.android.liveFlightTracker".split(",");
+
+
+        final Dialog dialog = new Dialog(this, R.style.Theme_AppCompat);
+        dialog.setContentView(R.layout.dialog_app_list);
+        dialog.setTitle("App Selection");
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        Window window = dialog.getWindow();
+        window.setAttributes(lp);
+        window.setGravity(Gravity.CENTER);
+
+        //adding dialog animation sliding up and down
+        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+
+        mAppListContainer = (LinearLayout) dialog.findViewById(R.id.app_list);
+        mButton1 = (Button) dialog.findViewById(R.id.btn_1);
+        mButton2 = (Button) dialog.findViewById(R.id.btn_2);
+        mButton3 = (Button) dialog.findViewById(R.id.btn_3);
+
+        Boolean hasApp = false;
+
+
+        for(int i=0; i<flightList.length; i++){
+            if(getAppIcon(flightList[i]) != null)
+                hasApp = true;
+        }
+
+        mButton1.setBackground(getAppIcon(flightList[0].trim()));
+        mButton2.setBackground(getAppIcon(flightList[1].trim()));
+        mButton3.setBackground(getAppIcon(flightList[2].trim()));
+
+
+        if (hasApp)
+            dialog.show();
+
+    }
+
+    public class JavaScriptInterface {
+        private final WebViewActivity webViewActivity;
+
+        JavaScriptInterface(WebViewActivity webViewActivity) {
+            this.webViewActivity = webViewActivity;
+        }
+
+        @JavascriptInterface
+        public void openCamera(final String fileName) {
+            Log.e("Test : ", fileName);
+        }
+
+        @JavascriptInterface
+        public void openCamera(final String fileName, final String jobNo) {
+
+            mFileName = fileName;
+            mJobNo = jobNo;
+
+            webViewActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+                    intent.putExtra("filename", fileName);
+                    startActivityForResult(intent, REQUEST_CAMERA_IMAGE);
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void phoneCall(String phoneNo) {
+
+            Uri number = Uri.parse("tel:" + phoneNo);
+            Intent callIntent = new Intent(Intent.ACTION_DIAL, number);
+            startActivity(callIntent);
+
+            Toast.makeText(getApplicationContext(), "Phone Call .... to  " + phoneNo, Toast.LENGTH_SHORT).show();
+        }
+
+        @JavascriptInterface
+        public void sendSMS(String phoneNo) {
+            String msg = "";
+            Uri number = Uri.parse("sms:" + phoneNo);
+            Intent smsIntent = new Intent(Intent.ACTION_VIEW, number);
+            startActivity(smsIntent);
+
+            Toast.makeText(getApplicationContext(), "Send SMS .... to  " + phoneNo, Toast.LENGTH_SHORT).show();
+        }
+
+        @JavascriptInterface
+        public void openFile(String url) {
+            Uri uri = Uri.parse(url);
+
+            // create an intent builder
+            CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
+
+            // Begin customizing
+            // set toolbar colors
+            intentBuilder.setToolbarColor(ContextCompat.getColor(WebViewActivity.this, R.color.colorPrimary));
+            intentBuilder.setSecondaryToolbarColor(ContextCompat.getColor(WebViewActivity.this, R.color.colorPrimaryDark));
+
+            // set start and exit animations
+            //            intentBuilder.setStartAnimations(this, R.anim.slide_in_right, R.anim.slide_out_left);
+            //            intentBuilder.setExitAnimations(this, android.R.anim.slide_in_left,
+            //                    android.R.anim.slide_out_right);
+
+            // build custom tabs intent
+            CustomTabsIntent customTabsIntent = intentBuilder.build();
+
+            // launch the url
+            customTabsIntent.launchUrl(WebViewActivity.this, uri);
+
+        }
+
+        @JavascriptInterface
+        public void showRoute(double lat, double lng, String address) {
+            showAppSelectionDialog(lat, lng, address);
+        }
+
+        @JavascriptInterface
+        public void showFlight(String flightList) {
+//            com.flightradar24free
+//            com.changiairport.cagapp
+//            com.flightaware.android.liveFlightTracker
+
+        }
+
+    }
+
+    private int convertDpToPx(int dp) {
+        return Math.round(dp * (getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
+
     }
 }
 

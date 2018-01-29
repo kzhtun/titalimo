@@ -5,10 +5,12 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 import android.widget.Toast;
 
 import java.io.PrintWriter;
@@ -81,6 +83,24 @@ public class Util {
         }
 
         return versionCode;
+    }
+
+    public static String getVersionName(Context context) {
+        String versionName ="";
+        try {
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            versionName = packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return versionName;
+    }
+
+
+
+    private int convertPxToDp(int px){
+        return Math.round(px/(Resources.getSystem().getDisplayMetrics().xdpi/DisplayMetrics.DENSITY_DEFAULT));
     }
 
 }
