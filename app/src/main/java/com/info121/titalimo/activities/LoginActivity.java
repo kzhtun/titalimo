@@ -97,7 +97,7 @@ public class LoginActivity extends AbstractActivity {
             return;
         }
 
-      //  APIClient.GetProduct();
+        //  APIClient.GetProduct();
 
         initializeControls();
         initializeEvents();
@@ -105,16 +105,20 @@ public class LoginActivity extends AbstractActivity {
 
         // Check and Redirect to Job List
 
-        if(isGPSEnabled()){
+        if (isGPSEnabled()) {
             if (!Util.isNullOrEmpty(App.userName))
                 startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
         }
 
-        APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
+      APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
+
+        //  startActivity(new Intent(LoginActivity.this, ToneSelection.class));
+
+        //FirebaseCrash.report(new Exception("My first Android non-fatal error"));
 
     }
 
-    private void NotificationTest(){
+    private void NotificationTest() {
         Intent intent = new Intent(this, ShowDialogService.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
@@ -138,13 +142,19 @@ public class LoginActivity extends AbstractActivity {
 
         prefDB = new PrefDB(getApplicationContext());
 
-        if (prefDB.getString(App.CONST_USER_NAME) != null) {
+        if (prefDB.getBoolean(App.CONST_REMEMBER_ME)) {
             mUserName.setText(prefDB.getString(App.CONST_USER_NAME));
             mRemember.setChecked(true);
         }
 
         mApiVersion.setText("Api " + Util.getVersionCode(mContext));
-        mUiVersion.setText( "Ver " + Util.getVersionName(mContext));
+        mUiVersion.setText("Ver " + Util.getVersionName(mContext));
+
+
+        if (prefDB.getBoolean(App.CONST_ALREADY_LOGIN) && prefDB.getString(App.CONST_USER_NAME).length() > 0 )
+            if (isGPSEnabled()) {
+                startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
+            }
 
     }
 
@@ -192,8 +202,6 @@ public class LoginActivity extends AbstractActivity {
 //        });
 
 
-
-
 //
 //        mLogin.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -208,29 +216,24 @@ public class LoginActivity extends AbstractActivity {
     @Subscribe
     public void onEvent(LoginRes res) {
         if (res.getValidatedriverResult().getValid().equalsIgnoreCase("Valid")) {
+
             // Add to Appication Varialbles
-            App.userName =  getUserName(mUserName.getText().toString());
+            App.userName = getUserName(mUserName.getText().toString());
             App.deviceID = Util.getDeviceID(getApplicationContext());
             App.timerDelay = Long.valueOf(res.getValidatedriverResult().getDuration());
 
+            prefDB.putString(App.CONST_USER_NAME, App.userName);
+            prefDB.putString(App.CONST_DEVICE_ID, App.deviceID);
+            prefDB.putLong(App.CONST_TIMER_DELAY, App.timerDelay);
+
+
+            LoginSuccessful();
+
             if (mRemember.isChecked())
-                prefDB.putString(App.CONST_USER_NAME, mUserName.getText().toString());
+                prefDB.putBoolean(App.CONST_REMEMBER_ME, true);
             else
-                prefDB.remove(App.CONST_USER_NAME);
+                prefDB.putBoolean(App.CONST_REMEMBER_ME, false);
 
-            prefDB.putBoolean(App.CONST_ALREADY_LOGIN, true);
-
-            // For Driver Only
-            if(!mUserName.getText().toString().contains("~")){
-                APIClient.UpdateDriverDetail(mUserName.getText().toString(), Util.getDeviceID(getApplicationContext()));
-                // Start Locaiton Service
-                startLocationService();
-            }else{ // Ghost User
-                if(isGPSEnabled()){
-                    startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
-                    mProgressBar.setVisibility(View.GONE);
-                }
-            }
 
         } else {
             mUserName.setError("Wrong user name");
@@ -239,21 +242,37 @@ public class LoginActivity extends AbstractActivity {
 
     }
 
-    private String getUserName(String userName){
-        if(userName.contains("~")){
-            return userName.split("~")[0];
-        }else
-            return userName;
+
+    private void LoginSuccessful() {
+        // For Driver Only
+        if (!mUserName.getText().toString().contains("~")) {
+            APIClient.UpdateDriverDetail(mUserName.getText().toString(), Util.getDeviceID(getApplicationContext()));
+            // Start Locaiton Service
+            startLocationService();
+           // startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
+            mProgressBar.setVisibility(View.GONE);
+        } else { // Ghost User
+            if (isGPSEnabled()) {
+                startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
+                mProgressBar.setVisibility(View.GONE);
+            }
+        }
     }
 
 
+    private String getUserName(String userName) {
+        if (userName.contains("~")) {
+            return userName.split("~")[0];
+        } else
+            return userName;
+    }
 
 
     @Subscribe
     public void onEvent(UpdateDriverDetailRes res) {
         if (res.getUpdatedeviceResult().equalsIgnoreCase("Success")) {
 
-            if(isGPSEnabled()){
+            if (isGPSEnabled()) {
                 startActivity(new Intent(LoginActivity.this, WebViewActivity.class));
                 mProgressBar.setVisibility(View.GONE);
             }
@@ -353,12 +372,12 @@ public class LoginActivity extends AbstractActivity {
 
     @Subscribe
     public void onEvent(VersionRes res) {
-        if(res.getGetversionResult().equalsIgnoreCase("Outdated")){
+        if (res.getGetversionResult().equalsIgnoreCase("Outdated")) {
             showAlertDialog();
         }
     }
 
-    private void showAlertDialog(){
+    private void showAlertDialog() {
         AlertDialog dialog = new AlertDialog.Builder(mContext)
                 .setTitle(R.string.AppName)
                 .setMessage(R.string.message_version_outdated)

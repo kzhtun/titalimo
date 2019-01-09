@@ -45,9 +45,12 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".activities.DialogActivity"
+        <activity
+            android:name=".activities.DialogActivity"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.AppCompat.Light.Dialog"></activity>
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
+        <activity android:name=".activities.ToneSelection" />
+        <activity android:name=".activities.SignaturePadActivity"></activity>
     </application>
 
 </manifest>

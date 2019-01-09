@@ -5,6 +5,7 @@ import com.info121.titalimo.models.ConfirmJobRes;
 import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.RemindLaterRes;
 import com.info121.titalimo.models.SaveShowPicRes;
+import com.info121.titalimo.models.SaveSignatureRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.models.UpdateDriverLocationRes;
 import com.info121.titalimo.models.VersionRes;
@@ -48,4 +49,8 @@ public interface APIService {
 
     @GET("getversion/AndriodV-{versionCode}")
     Call<VersionRes> checkVersion(@Path("versionCode") String versionCode);
+
+
+    @GET("savesignature/{jobNo},{fileName}")
+    Call<SaveSignatureRes> savesignature(@Path("jobNo") String jobNo, @Path("fileName") String fileName);
 }

@@ -112,7 +112,7 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
         App.mRunnable = new Runnable() {
             @Override
             public void run() {
-                Log.e("Timer ", "is Running");
+            //    Log.e("Timer ", "is Running");
                 if (App.userName.length() > 0)
                     updateToServer();
                 App.mHandler.postDelayed(this, App.timerDelay);
@@ -154,7 +154,7 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
             );
 
             // call api to checkVersion
-            APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
+           // APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
         }
     }
 

@@ -15,11 +15,11 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -38,6 +38,8 @@ import com.info121.titalimo.R;
 import com.info121.titalimo.api.APIClient;
 import com.info121.titalimo.models.SaveShowPicRes;
 import com.info121.titalimo.models.VersionRes;
+import com.info121.titalimo.services.ShowDialogService;
+import com.info121.titalimo.services.SmartLocationService;
 import com.info121.titalimo.utils.FtpHelper;
 import com.info121.titalimo.utils.PrefDB;
 import com.info121.titalimo.utils.Util;
@@ -48,20 +50,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 
+import static com.info121.titalimo.utils.FtpHelper.getImageUri;
+import static com.info121.titalimo.utils.FtpHelper.getRealPathFromURI;
+
 public class WebViewActivity extends AbstractActivity {
     private static final int REQUEST_CAMERA_IMAGE = 2001;
 
-
-    private final String FTP_URL = "118.200.199.248";
-    private final String FTP_USER = "ipos";
-    private final String FTP_PASSWORD = "iposftp";
-    private final String FTP_DIR = "limopics";
 
     WebView mWebView;
     Toolbar mToolbar;
     ProgressBar mProgressBar;
     Context mContext;
-    Button mGoogleMap, mWaze, mButton1, mButton2, mButton3;
+    Button mGoogleMap, mWaze, mChangi, mFlightRader, mFlightAware, mNoti, mProminent;
 
     LinearLayout mAppListContainer;
 
@@ -82,12 +82,15 @@ public class WebViewActivity extends AbstractActivity {
         // call api to checkVersion
         APIClient.CheckVersion(String.valueOf(Util.getVersionCode(mContext)));
 
-        showFlightAppsDialog();
+       // openCamera("test.jpg", "001");
+
     }
 
     void initializeControls() {
 
         prefDB = new PrefDB(getApplicationContext());
+        App.userName = prefDB.getString(App.CONST_USER_NAME);
+
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.setTitle("Welcome " + App.userName);
@@ -111,6 +114,7 @@ public class WebViewActivity extends AbstractActivity {
 
         mContext = WebViewActivity.this;
 
+
         url = String.format(App.CONST_URL_JOB_LIST, App.userName);
 
         mWebView.setWebViewClient(new WebViewClient() {
@@ -131,11 +135,12 @@ public class WebViewActivity extends AbstractActivity {
 //        showAppSelectionDialog(16.8293621,96.1528663);
     }
 
-    public void showAppSelectionDialog(final double lat, final double lng, final String address) {
+    public void showNavAppSelectionDialog(final double lat, final double lng, final String address) {
 
         final Dialog dialog = new Dialog(this, R.style.Theme_AppCompat);
-        dialog.setContentView(R.layout.dialog_app_selection);
+        dialog.setContentView(R.layout.dialog_navigation_app_selection);
         dialog.setTitle("App Selection");
+
 
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -145,7 +150,11 @@ public class WebViewActivity extends AbstractActivity {
         window.setGravity(Gravity.CENTER);
 
         //adding dialog animation sliding up and down
-        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        //dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(true);
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_Fade;
 
         mGoogleMap = (Button) dialog.findViewById(R.id.btn_google_map);
         mWaze = (Button) dialog.findViewById(R.id.btn_waze);
@@ -162,7 +171,12 @@ public class WebViewActivity extends AbstractActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                showRouteOnGoogleMap(lat, lng);
+                if (hasGoogleMap())
+                    showRouteOnGoogleMap(lat, lng);
+                else
+                    gotoPlayStore("com.google.android.apps.maps");
+
+
             }
         });
 
@@ -170,13 +184,20 @@ public class WebViewActivity extends AbstractActivity {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                showRouteOnWaze(lat, lng, address);
+                if (hasWaze())
+                    showRouteOnWaze(lat, lng, address);
+                else
+                    gotoPlayStore("com.waze");
             }
         });
 
         dialog.show();
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return super.onTouchEvent(event);
+    }
 
     public boolean hasGoogleMap() {
         try {
@@ -184,7 +205,7 @@ public class WebViewActivity extends AbstractActivity {
             Drawable gMapIcon = mContext.getPackageManager().getApplicationIcon(gMap);
 
             // Assign icon
-            mGoogleMap.setBackground(gMapIcon);
+          //  mGoogleMap.setBackground(gMapIcon);
             return true;
         } catch (PackageManager.NameNotFoundException ne) {
             return false;
@@ -197,7 +218,7 @@ public class WebViewActivity extends AbstractActivity {
             Drawable wazeIcon = mContext.getPackageManager().getApplicationIcon(waze);
 
             // Assign icon
-            mWaze.setBackground(wazeIcon);
+           // mWaze.setBackground(wazeIcon);
             return true;
         } catch (PackageManager.NameNotFoundException ne) {
             return false;
@@ -230,6 +251,17 @@ public class WebViewActivity extends AbstractActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(Menu.NONE, 0, Menu.NONE, "Option")
+                .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        showSettingSelectDialog();
+                        return true;
+                    }
+                })
+                .setIcon(ContextCompat.getDrawable(WebViewActivity.this, R.mipmap.ic_settings_white_24dp))
+                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
         menu.add(Menu.NONE, 0, Menu.NONE, "Refresh")
                 .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                     @Override
@@ -249,6 +281,9 @@ public class WebViewActivity extends AbstractActivity {
                     public boolean onMenuItemClick(MenuItem item) {
                         finish();
                         prefDB.remove(App.CONST_ALREADY_LOGIN);
+
+                        stopLocationService();
+
                         App.userName = null;
                         return true;
                     }
@@ -272,12 +307,20 @@ public class WebViewActivity extends AbstractActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+
+    private void stopLocationService(){
+        Intent intent = new Intent(WebViewActivity.this, SmartLocationService.class);
+        WebViewActivity.this.stopService(intent);
+    }
+
     @Subscribe
     public void onEvent(SaveShowPicRes res) {
         if (res.getSaveshowpicResult().equalsIgnoreCase("Success")) {
             Log.e("Save Show Pic : ", "Success... ");
         }
     }
+
+
 
 
     @Override
@@ -293,33 +336,27 @@ public class WebViewActivity extends AbstractActivity {
                 Uri tempUri = getImageUri(getApplicationContext(), photo);
 
                 // CALL THIS METHOD TO GET THE ACTUAL PATH
-                File finalFile = new File(getRealPathFromURI(tempUri));
+                File finalFile = new File(getRealPathFromURI(getApplicationContext(), tempUri));
 
                 InputStream inputStream = getContentResolver().openInputStream(tempUri);
 
                 FtpHelper.uploadTask async = new FtpHelper.uploadTask(WebViewActivity.this, inputStream);
-                async.execute(FTP_URL, FTP_USER, FTP_PASSWORD, FTP_DIR, mFileName, mJobNo);   //Passing arguments to AsyncThread
+                async.execute(App.FTP_URL, App.FTP_USER, App.FTP_PASSWORD, App.FTP_DIR, mFileName, mJobNo, "PHOTO");   //Passing arguments to AsyncThread
 
 
             } catch (Exception e) {
                 Log.e("Camera Error : ", e.getLocalizedMessage().toString());
             }
         }
+
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
 
-    public String getRealPathFromURI(Uri uri) {
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        cursor.moveToFirst();
-        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-        return cursor.getString(idx);
-    }
+
+
+
+
+
 
     @Override
     public void onBackPressed() {
@@ -383,12 +420,34 @@ public class WebViewActivity extends AbstractActivity {
         }
     }
 
-    private void showFlightAppsDialog() {
-        String flightList[] = "com.flightradar24free, com.changiairport.cagapp, com.flightaware.android.liveFlightTracker".split(",");
 
+
+    private void launchApp(String appPackageName) {
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(appPackageName);
+        if (launchIntent != null) {
+            startActivity(launchIntent);//null pointer check in case package name was not found
+        } else
+            gotoPlayStore(appPackageName);
+    }
+
+
+    public void gotoPlayStore(String appPackageName) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+        } catch (android.content.ActivityNotFoundException anfe) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+        }
+    }
+
+
+    private void showFlightAppsDialog() {
+
+        final String package_changi = "com.changiairport.cagapp";
+        final String package_flight_rader = "com.flightradar24free";
+        final String package_flight_aware = "com.flightaware.android.liveFlightTracker";
 
         final Dialog dialog = new Dialog(this, R.style.Theme_AppCompat);
-        dialog.setContentView(R.layout.dialog_app_list);
+        dialog.setContentView(R.layout.dialog_flight_app_selection);
         dialog.setTitle("App Selection");
 
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
@@ -399,30 +458,105 @@ public class WebViewActivity extends AbstractActivity {
         window.setGravity(Gravity.CENTER);
 
         //adding dialog animation sliding up and down
-        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        // dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+
+        // to cancel when outside touch
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(true);
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_Fade;
+
+        // window.setFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH);
 
         mAppListContainer = (LinearLayout) dialog.findViewById(R.id.app_list);
-        mButton1 = (Button) dialog.findViewById(R.id.btn_1);
-        mButton2 = (Button) dialog.findViewById(R.id.btn_2);
-        mButton3 = (Button) dialog.findViewById(R.id.btn_3);
-
-        Boolean hasApp = false;
+        mChangi = (Button) dialog.findViewById(R.id.btn_ichangi);
+        mFlightRader = (Button) dialog.findViewById(R.id.btn_flight_rader);
+        mFlightAware = (Button) dialog.findViewById(R.id.btn_flight_aware);
 
 
-        for(int i=0; i<flightList.length; i++){
-            if(getAppIcon(flightList[i]) != null)
-                hasApp = true;
-        }
+        mChangi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchApp(package_changi);
+                dialog.dismiss();
+            }
+        });
 
-        mButton1.setBackground(getAppIcon(flightList[0].trim()));
-        mButton2.setBackground(getAppIcon(flightList[1].trim()));
-        mButton3.setBackground(getAppIcon(flightList[2].trim()));
+        mFlightRader.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchApp(package_flight_rader);
+                dialog.dismiss();
+            }
+        });
+
+        mFlightAware.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchApp(package_flight_aware);
+                dialog.dismiss();
+            }
+        });
 
 
-        if (hasApp)
-            dialog.show();
+
+        dialog.show();
 
     }
+
+    private void showSettingSelectDialog() {
+
+        final Dialog dialog = new Dialog(this, R.style.Theme_AppCompat);
+        dialog.setContentView(R.layout.dialog_setting_selection);
+        dialog.setTitle("App Selection");
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        Window window = dialog.getWindow();
+        window.setAttributes(lp);
+        window.setGravity(Gravity.CENTER);
+
+        //adding dialog animation sliding up and down
+        // dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+
+        // to cancel when outside touch
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(true);
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_Fade;
+
+        // window.setFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH);
+
+        mNoti = (Button) dialog.findViewById(R.id.btn_notification);
+        mProminent = (Button) dialog.findViewById(R.id.btn_prominent);
+
+
+        mProminent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+
+                Intent intent = new Intent(mContext, ToneSelection.class);
+                intent.putExtra(ToneSelection.TONE_TYPE, "PROMINENT");
+                startActivity(intent);
+            }
+        });
+
+        mNoti.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+
+                Intent intent = new Intent(mContext, ToneSelection.class);
+                intent.putExtra(ToneSelection.TONE_TYPE, "NOTIFICATION");
+                startActivity(intent);
+            }
+        });
+
+
+        dialog.show();
+
+    }
+
 
     public class JavaScriptInterface {
         private final WebViewActivity webViewActivity;
@@ -431,10 +565,16 @@ public class WebViewActivity extends AbstractActivity {
             this.webViewActivity = webViewActivity;
         }
 
+
         @JavascriptInterface
-        public void openCamera(final String fileName) {
-            Log.e("Test : ", fileName);
+        public void openSignaturePad(String jobNo, String fileName){
+            Intent signatureIntent = new Intent(WebViewActivity.this, SignaturePadActivity.class);
+            signatureIntent.putExtra("JOBNO", jobNo);
+            signatureIntent.putExtra("FILENAME", fileName);
+
+            startActivity(signatureIntent);
         }
+
 
         @JavascriptInterface
         public void openCamera(final String fileName, final String jobNo) {
@@ -499,23 +639,16 @@ public class WebViewActivity extends AbstractActivity {
 
         @JavascriptInterface
         public void showRoute(double lat, double lng, String address) {
-            showAppSelectionDialog(lat, lng, address);
+            showNavAppSelectionDialog(lat, lng, address);
         }
 
         @JavascriptInterface
-        public void showFlight(String flightList) {
-//            com.flightradar24free
-//            com.changiairport.cagapp
-//            com.flightaware.android.liveFlightTracker
-
+        public void showFlight() {
+            showFlightAppsDialog();
         }
 
     }
 
-    private int convertDpToPx(int dp) {
-        return Math.round(dp * (getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
-
-    }
 }
 
 

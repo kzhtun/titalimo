@@ -8,6 +8,7 @@ import com.info121.titalimo.models.ConfirmJobRes;
 import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.RemindLaterRes;
 import com.info121.titalimo.models.SaveShowPicRes;
+import com.info121.titalimo.models.SaveSignatureRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.models.UpdateDriverLocationRes;
 import com.info121.titalimo.models.VersionRes;
@@ -77,6 +78,12 @@ public class APIClient {
     public static void CheckVersion(String versionCode) {
         Call<VersionRes> call = RestClient.LIMO().getApiService().checkVersion(versionCode);
         call.enqueue(new APICallback<VersionRes>() {
+        });
+    }
+
+    public static void SaveSignature(String jobNo, String fileName) {
+        Call<SaveSignatureRes> call = RestClient.LIMO().getApiService().savesignature(jobNo, fileName);
+        call.enqueue(new APICallback<SaveSignatureRes>() {
         });
     }
 }
