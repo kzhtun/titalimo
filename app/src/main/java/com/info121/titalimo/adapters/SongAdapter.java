@@ -1,5 +1,6 @@
 package com.info121.titalimo.adapters;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +16,7 @@ import com.info121.titalimo.R;
 import com.info121.titalimo.models.Song;
 import com.info121.titalimo.utils.PrefDB;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -92,6 +94,15 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> {
                     if(MODE.equalsIgnoreCase("NOTIFICATION")){
                         prefDB.putString(App.CONST_NOTIFICATION_TONE, mSongs.get(lastIndex).getData());
                     }
+
+                    Date now = new Date();
+                    long CHANNEL_ID = now.getTime();
+
+                    prefDB.putString("OLD_CH_ID", prefDB.getString("NEW_CH_ID"));
+                    prefDB.putString("NEW_CH_ID", CHANNEL_ID + "");
+
+                    prefDB.putString("OLD_CH_ID_P", prefDB.getString("NEW_CH_ID_P"));
+                    prefDB.putString("NEW_CH_ID_P", CHANNEL_ID + "_P");
 
                     Toast.makeText(mContext, "Set notification tone (" + mSongs.get(lastIndex) + ")" , Toast.LENGTH_SHORT).show();
                 }

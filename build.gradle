@@ -3,27 +3,23 @@
 buildscript {
     repositories {
         jcenter()
-        maven {
-            url 'https://github.com/uPhyca/stetho-realm/raw/master/maven-repo'
 
-        }
-        maven {
-            url "https://jitpack.io"
-        }
         google()
 
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.0'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        classpath 'com.google.gms:google-services:3.1.0'
+        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.google.gms:google-services:4.2.0'
+
     }
 }
 
 allprojects {
     repositories {
-        google()
+        mavenCentral()
+        maven { url "https://maven.google.com" }
         jcenter()
+        google()
     }
 }
 

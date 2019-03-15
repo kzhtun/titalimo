@@ -7,12 +7,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
@@ -42,11 +44,25 @@ import org.greenrobot.eventbus.Subscribe;
 
 
 public class LoginActivity extends AbstractActivity {
-    private static final int LOCATION_PERMISSION_ID = 1001;
-    private static final int SEND_SMS_PERMISSION_ID = 1002;
-    private static final int CALL_PHONE_PERMISSION_ID = 1003;
-    private static final int CAMERA_PERMISSION_ID = 1004;
-    private static final int WRITE_EXTERNAL_STORAGE_PERMISSION_ID = 1005;
+//    private static final int LOCATION_PERMISSION_ID = 1001;
+//    private static final int SEND_SMS_PERMISSION_ID = 1002;
+//    private static final int CALL_PHONE_PERMISSION_ID = 1003;
+//    private static final int CAMERA_PERMISSION_ID = 1004;
+//    private static final int WRITE_EXTERNAL_STORAGE_PERMISSION_ID = 1005;
+
+
+
+    public static String CONST_NOTIFICATION_TONE = "NOTIFICATION_TONE";
+    public static String CONST_PROMINENT_TONE = "PROMINENT_TONE";
+
+
+    int PERMISSION_ALL = 1;
+    String[] PERMISSIONS = {Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA, Manifest.permission.CALL_PHONE};
+
 
     private static final String TAG = LoginActivity.class.getSimpleName();
 
@@ -66,35 +82,53 @@ public class LoginActivity extends AbstractActivity {
     LinearLayout mLoginLayout;
     CheckBox mRemember;
 
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+
+
+
+        return true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Get permissions
-        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_ID);
-            return;
-        }
+//        // Get permissions
+//        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_ID);
+//            return;
+//        }
+//
+//        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.SEND_SMS}, SEND_SMS_PERMISSION_ID);
+//            return;
+//        }
+//
+//        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.CALL_PHONE}, CALL_PHONE_PERMISSION_ID);
+//            return;
+//        }
+//
+//        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_ID);
+//            return;
+//        }
+//
+//        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_PERMISSION_ID);
+//            return;
+//        }
 
-        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.SEND_SMS}, SEND_SMS_PERMISSION_ID);
-            return;
-        }
-
-        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.CALL_PHONE}, CALL_PHONE_PERMISSION_ID);
-            return;
-        }
-
-        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_ID);
-            return;
-        }
-
-        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_PERMISSION_ID);
-            return;
+        if (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
 
         //  APIClient.GetProduct();
@@ -126,21 +160,25 @@ public class LoginActivity extends AbstractActivity {
     }
 
     private void initializeControls() {
-        mLogin = (Button) findViewById(R.id.login);
-        mUserName = (EditText) findViewById(R.id.user_name);
-        mUiVersion = (TextView) findViewById(R.id.ui_version);
-        mApiVersion = (TextView) findViewById(R.id.api_version);
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mLogin =  findViewById(R.id.login);
+        mUserName =  findViewById(R.id.user_name);
+        mUiVersion =  findViewById(R.id.ui_version);
+        mApiVersion =  findViewById(R.id.api_version);
+        mProgressBar =  findViewById(R.id.progressBar);
 
-        mBackground = (ImageView) findViewById(R.id.image_background);
-        mLogo = (ImageView) findViewById(R.id.image_logo);
-        mLoginLayout = (LinearLayout) findViewById(R.id.login_layout);
+        mBackground =  findViewById(R.id.image_background);
+        mLogo = findViewById(R.id.image_logo);
+        mLoginLayout =  findViewById(R.id.login_layout);
 
-        mRemember = (CheckBox) findViewById(R.id.remember_me);
+        mRemember = findViewById(R.id.remember_me);
 
         mContext = LoginActivity.this;
 
         prefDB = new PrefDB(getApplicationContext());
+
+
+      //  Log.e("Noti :" , App.getNotificationTone().toString());
+
 
         if (prefDB.getBoolean(App.CONST_REMEMBER_ME)) {
             mUserName.setText(prefDB.getString(App.CONST_USER_NAME));
@@ -176,6 +214,8 @@ public class LoginActivity extends AbstractActivity {
     }
 
     private void initializeEvents() {
+
+        Log.e("Login Click", "");
         mLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -283,31 +323,31 @@ public class LoginActivity extends AbstractActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == LOCATION_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            // startLocationService();
-            finish();
-            startActivity(getIntent());
-        }
-
-        if (requestCode == SEND_SMS_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            finish();
-            startActivity(getIntent());
-        }
-
-        if (requestCode == CALL_PHONE_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            finish();
-            startActivity(getIntent());
-        }
-
-        if (requestCode == CAMERA_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            finish();
-            startActivity(getIntent());
-        }
-
-        if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            finish();
-            startActivity(getIntent());
-        }
+//        if (requestCode == LOCATION_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//            // startLocationService();
+//            finish();
+//            startActivity(getIntent());
+//        }
+//
+//        if (requestCode == SEND_SMS_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//            finish();
+//            startActivity(getIntent());
+//        }
+//
+//        if (requestCode == CALL_PHONE_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//            finish();
+//            startActivity(getIntent());
+//        }
+//
+//        if (requestCode == CAMERA_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//            finish();
+//            startActivity(getIntent());
+//        }
+//
+//        if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_ID && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//            finish();
+//            startActivity(getIntent());
+//        }
     }
 
     private void startLocationService() {

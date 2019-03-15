@@ -20,8 +20,14 @@ import com.info121.titalimo.utils.Util;
 
 public class App extends Application {
     // LIVE
-    public static final String CONST_REST_API_URL = "http://titaniumlimos.com/restapi/MyLimoService.svc/";
-    public static final String CONST_WEBSITE_URL = "http://titaniumlimos.com/iops_portal/";
+//    public static final String CONST_REST_API_URL = "http://titaniumlimos.com/restapi/MyLimoService.svc/";
+//    public static final String CONST_WEBSITE_URL = "http://titaniumlimos.com/iops_portal/";
+
+
+    // Latest
+    public static final String CONST_REST_API_URL = "http://103.7.10.47/RestApi/MyLimoService.svc/";
+    public static final String CONST_WEBSITE_URL = " http://103.7.10.47/iops_portal/";
+
 
     //    // DEV
 //    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:83/restapi/MyLimoService.svc/";
@@ -31,6 +37,7 @@ public class App extends Application {
     public static final String CONST_URL_JOB_LIST = CONST_WEBSITE_URL + "iDriverJobsList.aspx?LogInUser=%s";
     public static String CONST_USER_NAME = "USER_NAME";
     public static String CONST_ALREADY_LOGIN = "ALREADY_LOGIN";
+
     public static String CONST_NOTIFICATION_TONE = "NOTIFICATION_TONE";
     public static String CONST_PROMINENT_TONE = "PROMINENT_TONE";
 
@@ -54,15 +61,21 @@ public class App extends Application {
     public static Uri NOTIFICATION_SOUND_URI = null;
     public static Uri PROMINENT_SOUND_URI = null;
 
+
     private FirebaseAnalytics mFirebaseAnalytics;
 
 
-    // Live
-    public static final String FTP_URL = "103.7.10.80";
-    public static final String FTP_USER = "ipos";
-    public static final String FTP_PASSWORD = "Info121@sa";
-    public static String FTP_DIR = "limopics";
+//    // Live
+//    public static final String FTP_URL = "103.7.10.80";
+//    public static final String FTP_USER = "ipos";
+//    public static final String FTP_PASSWORD = "Info121@sa";
+//    public static String FTP_DIR = "limopics";
 
+    // NEW SERVER
+    public static final String FTP_URL = "103.7.10.47";
+    public static final String FTP_USER = "info121";
+    public static final String FTP_PASSWORD = "ja8mt988$$";
+    public static String FTP_DIR = "limopics";
 
     // DEV
 //    public static final String FTP_URL = "http://alexisinfo121.noip.me:83";
@@ -71,7 +84,7 @@ public class App extends Application {
 //    public static String FTP_DIR = "iops/images/limopics";
 
 
-    PrefDB prefDB = null;
+    public static PrefDB prefDB = null;
 
     public static final String[] SONG_PROJECTION = new String[]{
             MediaStore.Audio.Media._ID
@@ -93,6 +106,7 @@ public class App extends Application {
 
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, Util.getDeviceID(this));
         bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, Util.getDeviceName());
@@ -103,15 +117,27 @@ public class App extends Application {
         prefDB = new PrefDB(getApplicationContext());
 
 
-        if (prefDB.getString(CONST_NOTIFICATION_TONE) == "")
-            App.NOTIFICATION_SOUND_URI = App.DEFAULT_SOUND_URI;
-        else
-            App.NOTIFICATION_SOUND_URI = Uri.parse(prefDB.getString(CONST_NOTIFICATION_TONE));
+        if (prefDB.getString("OLD_CH_ID").length() == 0)
+            prefDB.putString("OLD_CH_ID", "DEFAULT_OLD");
 
-        if (prefDB.getString(CONST_PROMINENT_TONE) == "")
-            App.PROMINENT_SOUND_URI = App.DEFAULT_SOUND_URI;
-        else
-            App.PROMINENT_SOUND_URI = Uri.parse(prefDB.getString(CONST_PROMINENT_TONE));
+        if (prefDB.getString("NEW_CH_ID").length() == 0)
+            prefDB.putString("NEW_CH_ID", "DEFAULT_NEW");
+
+        if (prefDB.getString("OLD_CH_ID_P").length() == 0)
+            prefDB.putString("OLD_CH_ID_P", "DEFAULT_OLD_P");
+
+        if (prefDB.getString("NEW_CH_ID_P").length() == 0)
+            prefDB.putString("NEW_CH_ID_P", "DEFAULT_NEW_P");
+//
+//        if (prefDB.getString(CONST_NOTIFICATION_TONE) == "")
+//            App.NOTIFICATION_SOUND_URI = App.DEFAULT_SOUND_URI;
+//        else
+//            App.NOTIFICATION_SOUND_URI  =  Uri.parse(prefDB.getString(CONST_NOTIFICATION_TONE));
+//
+//        if (prefDB.getString(CONST_PROMINENT_TONE) == "")
+//            App.PROMINENT_SOUND_URI = App.DEFAULT_SOUND_URI;
+//        else
+//            App.PROMINENT_SOUND_URI = Uri.parse(prefDB.getString(CONST_PROMINENT_TONE));
 
 
 //      //  App.NOTIFICATION_SOUND_URI = Uri.parse("android.resource://" + getPackageName() + R.raw.alarm01);
@@ -120,6 +146,37 @@ public class App extends Application {
 //
 //        showNotification("aa", "bb");
 
+    }
+
+    public static Uri getProminentSoundUri() {
+        if (prefDB.getString(CONST_NOTIFICATION_TONE) == "")
+            return App.DEFAULT_SOUND_URI;
+        else
+            return Uri.parse(prefDB.getString(CONST_PROMINENT_TONE));
+    }
+
+    public static Uri getNotificationSoundUri() {
+        if (prefDB.getString(CONST_NOTIFICATION_TONE) == "")
+            return App.DEFAULT_SOUND_URI;
+        else
+            return Uri.parse(prefDB.getString(CONST_NOTIFICATION_TONE));
+    }
+
+
+    public static String getNewChannelId() {
+        return prefDB.getString("NEW_CH_ID");
+    }
+
+    public static String getOldChannelId() {
+        return prefDB.getString("OLD_CH_ID");
+    }
+
+    public static String getNewChannelIdP() {
+        return prefDB.getString("NEW_CH_ID_P");
+    }
+
+    public static String getOldChannelIdP() {
+        return prefDB.getString("OLD_CH_ID_P");
     }
 
 

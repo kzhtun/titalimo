@@ -2,14 +2,18 @@ package com.info121.titalimo.services;
 
 import android.app.Dialog;
 import android.app.Service;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.PixelFormat;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -21,6 +25,8 @@ import android.widget.Toast;
 
 import com.info121.titalimo.R;
 import com.info121.titalimo.activities.DialogActivity;
+import com.info121.titalimo.activities.LoginActivity;
+import com.info121.titalimo.activities.WebViewActivity;
 import com.info121.titalimo.api.APIClient;
 
 import java.util.ArrayList;
@@ -49,7 +55,12 @@ public class ShowDialogService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void createDialog(Intent intent) {
+    private void createDialog(Intent intent)
+    {
+
+    }
+
+    private void createDialog1(Intent intent) {
 
         final Dialog dialog = new Dialog(this, R.style.Theme_AppCompat);
 
@@ -58,17 +69,44 @@ public class ShowDialogService extends Service {
         TextView mMessage;
 
         dialog.setContentView(R.layout.dialog_prominent);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
-        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        WindowManager.LayoutParams lp; // new WindowManager.LayoutParams();
+
+
+        int LAYOUT_FLAG;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+
+        lp = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                LAYOUT_FLAG,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
+
+
+
+//        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
+//        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
         Window window = dialog.getWindow();
 
         dialog.setTitle("New Jobs");
         window.setAttributes(lp);
         window.setGravity(Gravity.CENTER);
 
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+//        } else {
+//            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+//
+//        }
         //adding dialog animation sliding up and down
-        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+       // dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_PANEL);
+       // dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_TOAST);
 
         // disable home, back key
         dialog.setOnKeyListener(new Dialog.OnKeyListener() {
@@ -92,7 +130,7 @@ public class ShowDialogService extends Service {
 
 
         mMessage = (TextView) dialog.findViewById(R.id.message);
-        mPhones = (Spinner) dialog.findViewById(R.id.phone_spinner);
+        mPhones = (Spinner) dialog.findViewById(R.id.phones);
         mCall = (Button) dialog.findViewById(R.id.btn_call);
         mConfirm = (Button) dialog.findViewById(R.id.btn_confirm);
         mDismiss = (Button) dialog.findViewById(R.id.btn_remind_later);
@@ -147,6 +185,26 @@ public class ShowDialogService extends Service {
         screenLock.acquire();
         screenLock.release();
     }
+
+
+
+//    private void showCustomPopupMenu()
+//    {
+//        windowManager2 = (WindowManager)getSystemService(WINDOW_SERVICE);
+//        LayoutInflater layoutInflater=(LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        View view=layoutInflater.inflate(R.layout.xxact_copy_popupmenu, null);
+//        params=new WindowManager.LayoutParams(
+//                WindowManager.LayoutParams.WRAP_CONTENT,
+//                WindowManager.LayoutParams.WRAP_CONTENT,
+//                WindowManager.LayoutParams.TYPE_PHONE,
+//                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+//                PixelFormat.TRANSLUCENT);
+//
+//        params.gravity=Gravity.CENTER|Gravity.CENTER;
+//        params.x=0;
+//        params.y=0;
+//        windowManager2.addView(view, params);
+//    }
 
     private ArrayAdapter<String> fillPhoneNumbers(String phones) {
         String p[] = phones.split("/");
