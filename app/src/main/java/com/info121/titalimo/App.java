@@ -8,8 +8,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.info121.titalimo.utils.PrefDB;
 import com.info121.titalimo.utils.Util;
 
@@ -19,20 +25,21 @@ import com.info121.titalimo.utils.Util;
  */
 
 public class App extends Application {
-    // LIVE
-//    public static final String CONST_REST_API_URL = "http://titaniumlimos.com/restapi/MyLimoService.svc/";
-//    public static final String CONST_WEBSITE_URL = "http://titaniumlimos.com/iops_portal/";
+    String TAG = "Application";
 
 
-    // Latest
-    public static final String CONST_REST_API_URL = "http://103.7.10.47/RestApi/MyLimoService.svc/";
-    public static final String CONST_WEBSITE_URL = " http://103.7.10.47/iops_portal/";
+
+
+    // Latest LIVE
+//    public static final String CONST_REST_API_URL = "http://103.7.10.47/RestApi/MyLimoService.svc/";
+//    public static final String CONST_WEBSITE_URL = " http://103.7.10.47/iops_portal/";
 
 
     //    // DEV
-//    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:83/restapi/MyLimoService.svc/";
-//    public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:83/iops_portal/";
+    public static final String CONST_REST_API_URL = "http://alexisinfo121.noip.me:83/restapi/MyLimoService.svc/";
+    public static final String CONST_WEBSITE_URL = "http://alexisinfo121.noip.me:83/iops_portal/";
 
+    public static String FCM_TOKEN = "";
 
     public static final String CONST_URL_JOB_LIST = CONST_WEBSITE_URL + "iDriverJobsList.aspx?LogInUser=%s";
     public static String CONST_USER_NAME = "USER_NAME";
@@ -48,7 +55,7 @@ public class App extends Application {
     public static String userName = "";
     public static String deviceID = "";
 
-    public static long timerDelay = 0;
+    public static long timerDelay = 10000;
     public static Location location;
 
     public static Context targetContent;
@@ -106,6 +113,23 @@ public class App extends Application {
 
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.e(TAG, "getInstanceId failed", task.getException());
+                            return;
+                        }
+
+                        // Get new Instance ID token
+                        FCM_TOKEN = task.getResult().getToken();
+
+                    }
+                });
+
+        Log.e("TOKEN : " , FCM_TOKEN);
 
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, Util.getDeviceID(this));

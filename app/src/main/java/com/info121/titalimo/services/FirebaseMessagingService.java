@@ -37,6 +37,11 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     String OLD_CH = "";
     String NEW_CH = "";
 
+
+    public  void notificationTest(){
+        showNotification("Title", "Body");
+    }
+
     private void showNotification(String title, String body) {
         OLD_CH  = App.getOldChannelId();
         NEW_CH = App.getNewChannelId();

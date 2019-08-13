@@ -112,14 +112,16 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
         App.mRunnable = new Runnable() {
             @Override
             public void run() {
-            //    Log.e("Timer ", "is Running");
-                if (App.userName.length() > 0)
+                Log.e("Timer ", "is Running");
+                if (App.userName.length() > 0) {
                     updateToServer();
-                App.mHandler.postDelayed(this, App.timerDelay);
+                    App.mHandler.postDelayed(App.mRunnable, App.timerDelay);
+                }
             }
         };
 
         App.mHandler.post(App.mRunnable);
+
     }
 
     private void stopTimer() {
@@ -159,7 +161,7 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
     }
 
     private String getCompleteAddressString(Location location) {
-        String strAdd = "";
+        String strAdd = "unknown";
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         try {
             List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
@@ -171,6 +173,7 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
                 strAdd += ", " + addresses.get(0).getCountryName();
 
             } else {
+                strAdd = "unknown";
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -178,4 +181,6 @@ public class SmartLocationService extends Service implements OnLocationUpdatedLi
         }
         return strAdd;
     }
+
+
 }

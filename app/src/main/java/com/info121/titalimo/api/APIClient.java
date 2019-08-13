@@ -4,6 +4,7 @@ package com.info121.titalimo.api;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.info121.titalimo.App;
 import com.info121.titalimo.models.ConfirmJobRes;
 import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.RemindLaterRes;
@@ -34,11 +35,10 @@ public class APIClient {
     }
 
     public static void UpdateDriverDetail(String userName, String deviceId) {
-        String fbToken = FirebaseInstanceId.getInstance().getToken();
 
-        Log.e("Firebase Token : ", fbToken);
+        Log.e("Firebase Token : ", App.FCM_TOKEN);
 
-        Call<UpdateDriverDetailRes> call = RestClient.LIMO().getApiService().updateDriverDetail(userName, deviceId, DEVICE_TYPE, fbToken );
+        Call<UpdateDriverDetailRes> call = RestClient.LIMO().getApiService().updateDriverDetail(userName, deviceId, DEVICE_TYPE, App.FCM_TOKEN );
         call.enqueue(new APICallback<UpdateDriverDetailRes>() {
         });
     }

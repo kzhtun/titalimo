@@ -35,6 +35,7 @@ import com.info121.titalimo.api.APIClient;
 import com.info121.titalimo.models.LoginRes;
 import com.info121.titalimo.models.UpdateDriverDetailRes;
 import com.info121.titalimo.models.VersionRes;
+import com.info121.titalimo.services.FirebaseMessagingService;
 import com.info121.titalimo.services.ShowDialogService;
 import com.info121.titalimo.services.SmartLocationService;
 import com.info121.titalimo.utils.PrefDB;
@@ -219,6 +220,7 @@ public class LoginActivity extends AbstractActivity {
         mLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 mProgressBar.setVisibility(View.VISIBLE);
 
                 if (mUserName.getText().length() > 0) {
@@ -260,7 +262,7 @@ public class LoginActivity extends AbstractActivity {
             // Add to Appication Varialbles
             App.userName = getUserName(mUserName.getText().toString());
             App.deviceID = Util.getDeviceID(getApplicationContext());
-            App.timerDelay = Long.valueOf(res.getValidatedriverResult().getDuration());
+     //       App.timerDelay = Long.valueOf(res.getValidatedriverResult().getDuration());
 
             prefDB.putString(App.CONST_USER_NAME, App.userName);
             prefDB.putString(App.CONST_DEVICE_ID, App.deviceID);
